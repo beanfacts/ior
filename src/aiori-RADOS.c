@@ -109,8 +109,8 @@ ior_aiori_t rados_aiori = {
         .check_params = RADOS_check_params
 };
 
-static rados_t       rados_cluster;     /* RADOS cluster handle */
-static rados_ioctx_t rados_ioctx;       /* I/O context for our pool in the RADOS cluster */
+static rados_t       rados_cluster = 0;     /* RADOS cluster handle */
+static rados_ioctx_t rados_ioctx = 0;       /* I/O context for our pool in the RADOS cluster */
 
 /***************************** F U N C T I O N S ******************************/
 
@@ -156,10 +156,18 @@ static void RADOS_Initialize(aiori_mod_opt_t * options)
 static void RADOS_Finalize(aiori_mod_opt_t * options)
 {
         /* ioctx destroy */
-        rados_ioctx_destroy(rados_ioctx);
+	if (rados_ioctx)
+	{
+		rados_ioctx_destroy(rados_ioctx);
+		rados_ioctx = 0;
+	}
 
         /* shutdown */
-        rados_shutdown(rados_cluster);
+	if (rados_cluster)
+	{
+        	rados_shutdown(rados_cluster);
+		rados_cluster = 0;
+	}
 }
 
 static aiori_fd_t *RADOS_Create_Or_Open(char *testFileName, int flags, aiori_mod_opt_t *param)
